@@ -73,7 +73,7 @@
 //
 
 template <typename T>
-class XtraVarProd : public edm::global::EDProducer<> {
+class XtraVarProd : public edm::stream::EDProducer<> {
   public:
     explicit XtraVarProd(const edm::ParameterSet &iConfig):
       src_(consumes<edm::View<pat::Jet>>(iConfig.getParameter<edm::InputTag>("src"))),
@@ -83,13 +83,42 @@ class XtraVarProd : public edm::global::EDProducer<> {
     {
       //un prodotto da copiare
       produces<edm::ValueMap<int>>("numDaughtersPt03vec");
+
+      produces<edm::ValueMap<float>>("emFractionEnergyRingsvec0");
+      produces<edm::ValueMap<float>>("emFractionEnergyRingsvec1");
+      produces<edm::ValueMap<float>>("emFractionEnergyRingsvec2");
+      produces<edm::ValueMap<float>>("emFractionEnergyRingsvec3");
+      produces<edm::ValueMap<float>>("emFractionEnergyRingsvec4");
+
+      produces<edm::ValueMap<float>>("chFractionEnergyRingsvec0");
+      produces<edm::ValueMap<float>>("chFractionEnergyRingsvec1");
+      produces<edm::ValueMap<float>>("chFractionEnergyRingsvec2");
+      produces<edm::ValueMap<float>>("chFractionEnergyRingsvec3");
+      produces<edm::ValueMap<float>>("chFractionEnergyRingsvec4");
+
+      produces<edm::ValueMap<float>>("muFractionEnergyRingsvec0");
+      produces<edm::ValueMap<float>>("muFractionEnergyRingsvec1");
+      produces<edm::ValueMap<float>>("muFractionEnergyRingsvec2");
+      produces<edm::ValueMap<float>>("muFractionEnergyRingsvec3");
+      produces<edm::ValueMap<float>>("muFractionEnergyRingsvec4");
+
+      produces<edm::ValueMap<float>>("neFractionEnergyRingsvec0");
+      produces<edm::ValueMap<float>>("neFractionEnergyRingsvec1");
+      produces<edm::ValueMap<float>>("neFractionEnergyRingsvec2");
+      produces<edm::ValueMap<float>>("neFractionEnergyRingsvec3");
+      produces<edm::ValueMap<float>>("neFractionEnergyRingsvec4");
+
       // add
+
     }
     ~XtraVarProd() override {};
     static void fillDescriptions(edm::ConfigurationDescriptions& descriptions);
 
   private:
-    void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const override;
+    //void produce(edm::StreamID, edm::Event&, const edm::EventSetup&) const;
+    void produce(edm::Event&, const edm::EventSetup&) override;
+    void beginStream(edm::StreamID) override;
+    void endStream() override;
 
     // ----------member data ---------------------------
 
@@ -128,24 +157,44 @@ class XtraVarProd : public edm::global::EDProducer<> {
 // ------------ method called to produce the data  ------------
 template <typename T>
 void
-XtraVarProd<T>::produce(edm::StreamID streamID, edm::Event& iEvent, const edm::EventSetup& iSetup) const{
+XtraVarProd<T>::produce(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   edm::Handle<edm::View<T>> src;
   iEvent.getByToken(src_, src);
-  //readAdditionalCollections(iEvent, iSetup);
-  //readAdditionalCollections(iEvent, iSetup);
 
-  //iEvent.getByToken(pvsrc_, pvsrc_);
-  //iEvent.getByToken(svsrc_, svsrc_);
-  //iEvent.getByToken(rhosrc_, rhosrc_);
   const auto& srcJet = iEvent.getHandle(src_);
-  //const auto& vtxProd = iEvent.get(srcVtx_);
-  //const auto& svProd = iEvent.get(srcSV_);
+
+
   auto nJet = srcJet->size();
+
   std::vector<int> numDaughtersPt03vec(nJet, 0);
 
+  std::vector<float> emFractionEnergyRingsvec0(nJet, 0);
+  std::vector<float> emFractionEnergyRingsvec1(nJet, 0);
+  std::vector<float> emFractionEnergyRingsvec2(nJet, 0);
+  std::vector<float> emFractionEnergyRingsvec3(nJet, 0);
+  std::vector<float> emFractionEnergyRingsvec4(nJet, 0);
+
+  std::vector<float> chFractionEnergyRingsvec0(nJet, 0);
+  std::vector<float> chFractionEnergyRingsvec1(nJet, 0);
+  std::vector<float> chFractionEnergyRingsvec2(nJet, 0);
+  std::vector<float> chFractionEnergyRingsvec3(nJet, 0);
+  std::vector<float> chFractionEnergyRingsvec4(nJet, 0);
+
+  std::vector<float> neFractionEnergyRingsvec0(nJet, 0);
+  std::vector<float> neFractionEnergyRingsvec1(nJet, 0);
+  std::vector<float> neFractionEnergyRingsvec2(nJet, 0);
+  std::vector<float> neFractionEnergyRingsvec3(nJet, 0);
+  std::vector<float> neFractionEnergyRingsvec4(nJet, 0);
+
+  std::vector<float> muFractionEnergyRingsvec0(nJet, 0);
+  std::vector<float> muFractionEnergyRingsvec1(nJet, 0);
+  std::vector<float> muFractionEnergyRingsvec2(nJet, 0);
+  std::vector<float> muFractionEnergyRingsvec3(nJet, 0);
+  std::vector<float> muFractionEnergyRingsvec4(nJet, 0);
+
   int counter = -1;
-  for (auto const& j : *src) { 
+  for (auto const& j : *src) {
     counter += 1;
 
     float cone_boundaries[] = {0.05, 0.1, 0.2, 0.3, 0.4};
@@ -183,16 +232,183 @@ XtraVarProd<T>::produce(edm::StreamID streamID, edm::Event& iEvent, const edm::E
 
     numDaughtersPt03vec[counter] = numDaughtersPt03;
 
+    emFractionEnergyRingsvec0[counter] = emFractionEnergyRings[0];
+    emFractionEnergyRingsvec1[counter] = emFractionEnergyRings[1];
+    emFractionEnergyRingsvec2[counter] = emFractionEnergyRings[2];
+    emFractionEnergyRingsvec3[counter] = emFractionEnergyRings[3];
+    emFractionEnergyRingsvec4[counter] = emFractionEnergyRings[4];
+
+    muFractionEnergyRingsvec0[counter] = muFractionEnergyRings[0];
+    muFractionEnergyRingsvec1[counter] = muFractionEnergyRings[1];
+    muFractionEnergyRingsvec2[counter] = muFractionEnergyRings[2];
+    muFractionEnergyRingsvec3[counter] = muFractionEnergyRings[3];
+    muFractionEnergyRingsvec4[counter] = muFractionEnergyRings[4];
+
+    chFractionEnergyRingsvec0[counter] = chFractionEnergyRings[0];
+    chFractionEnergyRingsvec1[counter] = chFractionEnergyRings[1];
+    chFractionEnergyRingsvec2[counter] = chFractionEnergyRings[2];
+    chFractionEnergyRingsvec3[counter] = chFractionEnergyRings[3];
+    chFractionEnergyRingsvec4[counter] = chFractionEnergyRings[4];
+
+    neFractionEnergyRingsvec0[counter] = neFractionEnergyRings[0];
+    neFractionEnergyRingsvec1[counter] = neFractionEnergyRings[1];
+    neFractionEnergyRingsvec2[counter] = neFractionEnergyRings[2];
+    neFractionEnergyRingsvec3[counter] = neFractionEnergyRings[3];
+    neFractionEnergyRingsvec4[counter] = neFractionEnergyRings[4];
+
+
   }
 
   std::unique_ptr<edm::ValueMap<int>> numDaughtersPt03_VM(new edm::ValueMap<int>());
-  edm::ValueMap<int>::Filler fillerRel(*numDaughtersPt03_VM);
-  fillerRel.insert(srcJet, numDaughtersPt03vec.begin(), numDaughtersPt03vec.end());
-  fillerRel.fill();
+  edm::ValueMap<int>::Filler filler_duaghters(*numDaughtersPt03_VM);
+  filler_duaghters.insert(srcJet, numDaughtersPt03vec.begin(), numDaughtersPt03vec.end());
+  filler_duaghters.fill();
   iEvent.put(std::move(numDaughtersPt03_VM), "numDaughtersPt03vec");
+
+
+  std::unique_ptr<edm::ValueMap<float>> emFractionEnergyRingsvec0_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_emFractionEnergyRings0(*emFractionEnergyRingsvec0_VM);
+  filler_emFractionEnergyRings0.insert(srcJet, emFractionEnergyRingsvec0.begin(), emFractionEnergyRingsvec0.end());
+  filler_emFractionEnergyRings0.fill();
+  iEvent.put(std::move(emFractionEnergyRingsvec0_VM), "emFractionEnergyRingsvec0");
+  
+  std::unique_ptr<edm::ValueMap<float>> emFractionEnergyRingsvec1_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_emFractionEnergyRings1(*emFractionEnergyRingsvec1_VM);
+  filler_emFractionEnergyRings1.insert(srcJet, emFractionEnergyRingsvec1.begin(), emFractionEnergyRingsvec1.end());
+  filler_emFractionEnergyRings1.fill();
+  iEvent.put(std::move(emFractionEnergyRingsvec1_VM), "emFractionEnergyRingsvec1");
+
+  std::unique_ptr<edm::ValueMap<float>> emFractionEnergyRingsvec2_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_emFractionEnergyRings2(*emFractionEnergyRingsvec2_VM);
+  filler_emFractionEnergyRings2.insert(srcJet, emFractionEnergyRingsvec2.begin(), emFractionEnergyRingsvec2.end());
+  filler_emFractionEnergyRings2.fill();
+  iEvent.put(std::move(emFractionEnergyRingsvec2_VM), "emFractionEnergyRingsvec2");
+
+  std::unique_ptr<edm::ValueMap<float>> emFractionEnergyRingsvec3_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_emFractionEnergyRings3(*emFractionEnergyRingsvec3_VM);
+  filler_emFractionEnergyRings3.insert(srcJet, emFractionEnergyRingsvec3.begin(), emFractionEnergyRingsvec3.end());
+  filler_emFractionEnergyRings3.fill();
+  iEvent.put(std::move(emFractionEnergyRingsvec3_VM), "emFractionEnergyRingsvec3");
+
+  std::unique_ptr<edm::ValueMap<float>> emFractionEnergyRingsvec4_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_emFractionEnergyRings4(*emFractionEnergyRingsvec4_VM);
+  filler_emFractionEnergyRings4.insert(srcJet, emFractionEnergyRingsvec4.begin(), emFractionEnergyRingsvec4.end());
+  filler_emFractionEnergyRings4.fill();
+  iEvent.put(std::move(emFractionEnergyRingsvec4_VM), "emFractionEnergyRingsvec4");
+
+
+  std::unique_ptr<edm::ValueMap<float>> muFractionEnergyRingsvec0_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_muFractionEnergyRings0(*muFractionEnergyRingsvec0_VM);
+  filler_muFractionEnergyRings0.insert(srcJet, muFractionEnergyRingsvec0.begin(), muFractionEnergyRingsvec0.end());
+  filler_muFractionEnergyRings0.fill();
+  iEvent.put(std::move(muFractionEnergyRingsvec0_VM), "muFractionEnergyRingsvec0");
+  
+  std::unique_ptr<edm::ValueMap<float>> muFractionEnergyRingsvec1_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_muFractionEnergyRings1(*muFractionEnergyRingsvec1_VM);
+  filler_muFractionEnergyRings1.insert(srcJet, muFractionEnergyRingsvec1.begin(), muFractionEnergyRingsvec1.end());
+  filler_muFractionEnergyRings1.fill();
+  iEvent.put(std::move(muFractionEnergyRingsvec1_VM), "muFractionEnergyRingsvec1");
+
+  std::unique_ptr<edm::ValueMap<float>> muFractionEnergyRingsvec2_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_muFractionEnergyRings2(*muFractionEnergyRingsvec2_VM);
+  filler_muFractionEnergyRings2.insert(srcJet, muFractionEnergyRingsvec2.begin(), muFractionEnergyRingsvec2.end());
+  filler_muFractionEnergyRings2.fill();
+  iEvent.put(std::move(muFractionEnergyRingsvec2_VM), "muFractionEnergyRingsvec2");
+
+  std::unique_ptr<edm::ValueMap<float>> muFractionEnergyRingsvec3_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_muFractionEnergyRings3(*muFractionEnergyRingsvec3_VM);
+  filler_muFractionEnergyRings3.insert(srcJet, muFractionEnergyRingsvec3.begin(), muFractionEnergyRingsvec3.end());
+  filler_muFractionEnergyRings3.fill();
+  iEvent.put(std::move(muFractionEnergyRingsvec3_VM), "muFractionEnergyRingsvec3");
+
+  std::unique_ptr<edm::ValueMap<float>> muFractionEnergyRingsvec4_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_muFractionEnergyRings4(*muFractionEnergyRingsvec4_VM);
+  filler_muFractionEnergyRings4.insert(srcJet, muFractionEnergyRingsvec4.begin(), muFractionEnergyRingsvec4.end());
+  filler_muFractionEnergyRings4.fill();
+  iEvent.put(std::move(muFractionEnergyRingsvec4_VM), "muFractionEnergyRingsvec4");
+
+
+  std::unique_ptr<edm::ValueMap<float>> chFractionEnergyRingsvec0_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_chFractionEnergyRings0(*chFractionEnergyRingsvec0_VM);
+  filler_chFractionEnergyRings0.insert(srcJet, chFractionEnergyRingsvec0.begin(), chFractionEnergyRingsvec0.end());
+  filler_chFractionEnergyRings0.fill();
+  iEvent.put(std::move(chFractionEnergyRingsvec0_VM), "chFractionEnergyRingsvec0");
+  
+  std::unique_ptr<edm::ValueMap<float>> chFractionEnergyRingsvec1_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_chFractionEnergyRings1(*chFractionEnergyRingsvec1_VM);
+  filler_chFractionEnergyRings1.insert(srcJet, chFractionEnergyRingsvec1.begin(), chFractionEnergyRingsvec1.end());
+  filler_chFractionEnergyRings1.fill();
+  iEvent.put(std::move(chFractionEnergyRingsvec1_VM), "chFractionEnergyRingsvec1");
+
+  std::unique_ptr<edm::ValueMap<float>> chFractionEnergyRingsvec2_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_chFractionEnergyRings2(*chFractionEnergyRingsvec2_VM);
+  filler_chFractionEnergyRings2.insert(srcJet, chFractionEnergyRingsvec2.begin(), chFractionEnergyRingsvec2.end());
+  filler_chFractionEnergyRings2.fill();
+  iEvent.put(std::move(chFractionEnergyRingsvec2_VM), "chFractionEnergyRingsvec2");
+
+  std::unique_ptr<edm::ValueMap<float>> chFractionEnergyRingsvec3_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_chFractionEnergyRings3(*chFractionEnergyRingsvec3_VM);
+  filler_chFractionEnergyRings3.insert(srcJet, chFractionEnergyRingsvec3.begin(), chFractionEnergyRingsvec3.end());
+  filler_chFractionEnergyRings3.fill();
+  iEvent.put(std::move(chFractionEnergyRingsvec3_VM), "chFractionEnergyRingsvec3");
+
+  std::unique_ptr<edm::ValueMap<float>> chFractionEnergyRingsvec4_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_chFractionEnergyRings4(*chFractionEnergyRingsvec4_VM);
+  filler_chFractionEnergyRings4.insert(srcJet, chFractionEnergyRingsvec4.begin(), chFractionEnergyRingsvec4.end());
+  filler_chFractionEnergyRings4.fill();
+  iEvent.put(std::move(chFractionEnergyRingsvec4_VM), "chFractionEnergyRingsvec4");
+
+
+  std::unique_ptr<edm::ValueMap<float>> neFractionEnergyRingsvec0_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_neFractionEnergyRings0(*neFractionEnergyRingsvec0_VM);
+  filler_neFractionEnergyRings0.insert(srcJet, neFractionEnergyRingsvec0.begin(), neFractionEnergyRingsvec0.end());
+  filler_neFractionEnergyRings0.fill();
+  iEvent.put(std::move(neFractionEnergyRingsvec0_VM), "neFractionEnergyRingsvec0");
+  
+  std::unique_ptr<edm::ValueMap<float>> neFractionEnergyRingsvec1_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_neFractionEnergyRings1(*neFractionEnergyRingsvec1_VM);
+  filler_neFractionEnergyRings1.insert(srcJet, neFractionEnergyRingsvec1.begin(), neFractionEnergyRingsvec1.end());
+  filler_neFractionEnergyRings1.fill();
+  iEvent.put(std::move(neFractionEnergyRingsvec1_VM), "neFractionEnergyRingsvec1");
+
+  std::unique_ptr<edm::ValueMap<float>> neFractionEnergyRingsvec2_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_neFractionEnergyRings2(*neFractionEnergyRingsvec2_VM);
+  filler_neFractionEnergyRings2.insert(srcJet, neFractionEnergyRingsvec2.begin(), neFractionEnergyRingsvec2.end());
+  filler_neFractionEnergyRings2.fill();
+  iEvent.put(std::move(neFractionEnergyRingsvec2_VM), "neFractionEnergyRingsvec2");
+
+  std::unique_ptr<edm::ValueMap<float>> neFractionEnergyRingsvec3_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_neFractionEnergyRings3(*neFractionEnergyRingsvec3_VM);
+  filler_neFractionEnergyRings3.insert(srcJet, neFractionEnergyRingsvec3.begin(), neFractionEnergyRingsvec3.end());
+  filler_neFractionEnergyRings3.fill();
+  iEvent.put(std::move(neFractionEnergyRingsvec3_VM), "neFractionEnergyRingsvec3");
+
+  std::unique_ptr<edm::ValueMap<float>> neFractionEnergyRingsvec4_VM(new edm::ValueMap<float>());
+  edm::ValueMap<float>::Filler filler_neFractionEnergyRings4(*neFractionEnergyRingsvec4_VM);
+  filler_neFractionEnergyRings4.insert(srcJet, neFractionEnergyRingsvec4.begin(), neFractionEnergyRingsvec4.end());
+  filler_neFractionEnergyRings4.fill();
+  iEvent.put(std::move(neFractionEnergyRingsvec4_VM), "neFractionEnergyRingsvec4");
+
+
+  // edm::LogWarning("DEBUGGER") << "Produce Done";
+
 
 }
 
+
+// ------------ method called once each stream before processing any runs, lumis or events  ------------
+template <typename T>
+void
+XtraVarProd<T>::beginStream(edm::StreamID) 
+{
+  //edm::LogWarning("DEBUGGER") << "beginStream";
+}
+
+// ------------ method called once each stream after processing all runs, lumis and events  ------------
+template <typename T>
+void
+XtraVarProd<T>::endStream() {
+}
 
 // ------------ method fills 'descriptions' with the allowed parameters for the module  ------------
 template <typename T>
